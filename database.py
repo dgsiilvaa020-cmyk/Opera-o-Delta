@@ -70,4 +70,14 @@ async def iniciar_banco():
 
         await db.commit()
 
+        cursor = await db.execute("""
+            SELECT name FROM sqlite_master
+            WHERE type='table'
+        """)
+
+        tabelas = await cursor.fetchall()
+
+        print("TABELAS DO BANCO:")
+        print(tabelas)
+
     print("Banco iniciado!")
