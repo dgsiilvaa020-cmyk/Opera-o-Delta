@@ -2,8 +2,8 @@ import os
 import asyncio
 import aiosqlite
 
-from aiogram import Bot, Dispatcher
-from aiogram.types import Message, ChatMemberUpdated
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message, ChatMemberUpdated, CallbackQuery
 from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
@@ -11,9 +11,6 @@ from datetime import datetime
 
 from config import BOT_TOKEN, OWNER_IDS
 from database import iniciar_banco
-
-from aiogram.types import CallbackQuery
-
 
 bot = Bot(token=BOT_TOKEN)
 
