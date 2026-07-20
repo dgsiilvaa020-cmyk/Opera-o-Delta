@@ -132,13 +132,12 @@ async def novo_membro(event: ChatMemberUpdated):
             if nome_antigo != user.full_name:
 
                 await db.execute("""
-                    INSERT INTO historico_usuarios
-                    (usuario_id, tipo, valor, data)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO historico_nomes
+                    (usuario_id, nome, data)
+                    VALUES (?, ?, ?)
                 """, (
                     user.id,
-                    "nome",
-                    user.full_name,
+                    user.username,
                     agora
                 ))
 
@@ -146,12 +145,11 @@ async def novo_membro(event: ChatMemberUpdated):
             if username_antigo != user.username:
 
                 await db.execute("""
-                    INSERT INTO historico_usuarios
-                    (usuario_id, tipo, valor, data)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO historico_nomes
+                    (usuario_id, nome, data)
+                    VALUES (?, ?, ?)
                 """, (
                     user.id,
-                    "username",
                     user.username,
                     agora
                 ))
