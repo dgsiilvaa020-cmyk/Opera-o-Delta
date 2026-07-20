@@ -4,9 +4,9 @@ DATABASE = "guardiao.db"
 
 
 async def iniciar_banco():
+
     async with aiosqlite.connect(DATABASE) as db:
 
-        # Usuários
         await db.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY,
@@ -17,7 +17,7 @@ async def iniciar_banco():
         )
         """)
 
-        # Histórico de entradas
+
         await db.execute("""
         CREATE TABLE IF NOT EXISTS entradas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +28,7 @@ async def iniciar_banco():
         )
         """)
 
-        # Lista Negra
+
         await db.execute("""
         CREATE TABLE IF NOT EXISTS blacklist (
             usuario_id INTEGER PRIMARY KEY,
@@ -37,7 +37,7 @@ async def iniciar_banco():
         )
         """)
 
-        # Lista Branca
+
         await db.execute("""
         CREATE TABLE IF NOT EXISTS whitelist (
             usuario_id INTEGER PRIMARY KEY,
@@ -45,4 +45,7 @@ async def iniciar_banco():
         )
         """)
 
+
         await db.commit()
+
+    print("Banco iniciado!")
