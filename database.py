@@ -45,6 +45,28 @@ async def iniciar_banco():
         )
         """)
 
+        
+        # Histórico de nomes
+        await db.execute("""
+        CREATE TABLE IF NOT EXISTS historico_nomes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER,
+            nome TEXT,
+            data TEXT
+        )
+        """)
+
+        
+        # Histórico de usernames
+        await db.execute("""
+        CREATE TABLE IF NOT EXISTS historico_usernames (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER,
+            username TEXT,
+            data TEXT
+        )
+        """)
+
 
         await db.commit()
 
