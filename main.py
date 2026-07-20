@@ -23,6 +23,12 @@ DATABASE = "guardiao.db"
 @dp.chat_member()
 async def novo_membro(event: ChatMemberUpdated):
 
+@dp.chat_member()
+async def novo_membro(event: ChatMemberUpdated):
+
+    print("EVENTO CHAT_MEMBER RECEBIDO")
+
+
     # Só executa quando alguém entra no grupo
     if event.new_chat_member.status not in ("member", "administrator", "creator"):
         return
@@ -91,7 +97,10 @@ async def main():
     print("🛡 Guardião iniciado com sucesso!")
 
     # Inicia o bot
-    await dp.start_polling(bot)
+    await dp.start_polling(
+        bot,
+        allowed_updates=dp.resolve_used_update_types()
+    )
 
 
 if __name__ == "__main__":
