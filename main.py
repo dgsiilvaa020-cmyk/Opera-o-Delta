@@ -6,8 +6,35 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import ChatMemberUpdated
 from datetime import datetime
 
-from config import BOT_TOKEN
+from config import BOT_TOKEN, OWNER_IDS
 from database import iniciar_banco
+
+from aiogram.types import Message
+from aiogram.filters import Command
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+
+@dp.message(Command("start"))
+async def painel(message: Message):
+
+    if message.from_user.id not in OWNER_IDS:
+        return
+
+
+    teclado = InlineKeyboardBuilder()
+
+    teclado.button(
+        text="👥 Novos Membros",
+        callback_data="novos_membros"
+    )
+
+    teclado.adjust(1)
+
+
+    await message.answer(
+        "🛡 Guardião\n\nEscolha uma opção:",
+        reply_markup=teclado.as_markup()
+    )
 
 
 bot = Bot(token=BOT_TOKEN)
