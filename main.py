@@ -183,24 +183,22 @@ async def novo_membro(event: ChatMemberUpdated):
 
             # Salva o primeiro nome no histórico
             await db.execute("""
-                INSERT INTO historico_usuarios
-                (usuario_id, tipo, valor, data)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO historico_nomes
+                (usuario_id, nome, data)
+                VALUES (?, ?, ?)
             """, (
                 user.id,
-                "nome",
                 user.full_name,
                 agora
             ))
 
             # Salva o primeiro username no histórico
             await db.execute("""
-                INSERT INTO historico_usuarios
-                (usuario_id, tipo, valor, data)
-                VALUES (?, ?, ?, ?)
+               INSERT INTO historico_usernames
+               (usuario_id, username, data)
+               VALUES (?, ?, ?)
             """, (
                 user.id,
-                "username",
                 user.username,
                 agora
             ))
