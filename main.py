@@ -1,11 +1,26 @@
-import os
-from dotenv import load_dotenv
+import asyncio
 
-load_dotenv()
+from aiogram import Bot, Dispatcher
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+from config import BOT_TOKEN
+from database import iniciar_banco
 
-# Seu ID
-OWNER_IDS = {
-    123456789  # Troque pelo seu ID
-}
+# Cria o bot
+bot = Bot(token=BOT_TOKEN)
+
+# Dispatcher
+dp = Dispatcher()
+
+
+async def main():
+    # Cria o banco caso não exista
+    await iniciar_banco()
+
+    print("🛡 Guardião iniciado com sucesso!")
+
+    # Inicia o bot
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
