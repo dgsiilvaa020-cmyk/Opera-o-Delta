@@ -49,9 +49,20 @@ async def novos_membros(callback: CallbackQuery):
     async with aiosqlite.connect(DATABASE) as db:
 
         cursor = await db.execute("""
-            SELECT nome, username, usuario_id, grupo_nome, data
+            SELECT 
+                usuarios.nome,
+                usuarios.username,
+                usuarios.id,
+                entradas.grupo_nome,
+                entradas.data
+
             FROM entradas
-            ORDER BY id DESC
+
+            INNER JOIN usuarios
+            ON usuarios.id = entradas.usuario_id
+
+            ORDER BY entradas.id DESC
+
             LIMIT 10
         """)
 
@@ -59,20 +70,23 @@ async def novos_membros(callback: CallbackQuery):
 
 
     if not registros:
+
         await callback.message.edit_text(
-            "👥 Novos Membros\n\nNenhuma entrada registrada ainda."
+            "👥 Novos Membros\n\nNenhuma entrada registrada."
         )
+
+        await callback.answer()
         return
 
 
-    texto = "👥 Últimos membros que entraram:\n\n"
+    texto = "👥 Últimos membros:\n\n"
 
 
     for nome, username, usuario_id, grupo, data in registros:
 
         texto += (
             f"👤 {nome}\n"
-            f"📛 @{username if username else 'sem_username'}\n"
+            f"📛 @{username if username else 'sem @'}\n"
             f"🆔 {usuario_id}\n"
             f"👥 {grupo}\n"
             f"📅 {data}\n\n"
@@ -82,7 +96,7 @@ async def novos_membros(callback: CallbackQuery):
     await callback.message.edit_text(texto)
 
     await callback.answer()
-
+    
 
 @dp.chat_member()
 async def novo_membro(event: ChatMemberUpdated):
