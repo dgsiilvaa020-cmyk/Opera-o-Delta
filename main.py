@@ -110,36 +110,25 @@ async def novo_membro(event: ChatMemberUpdated):
     ):
         return
 
-
     user = event.new_chat_member.user
-
+    agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     async with aiosqlite.connect(DATABASE) as db:
 
-        cursor = await db.execute(
-            """
+        # Procura o usuário
+        cursor = await db.execute("""
             SELECT nome, username
             FROM usuarios
             WHERE id=?
-            """,
-            (user.id,)
-        )
+        """, (user.id,))
 
         dados_usuario = await cursor.fetchone()
 
-        existe = dados_usuario is not None
+        if dados_usuario:
 
+            nome_antigo, username_antigo = dados_usuario
 
-        agora = datetime.now().strftime(
-            "%d/%m/%Y %H:%M:%S"
-        )
-
-
-         if existe:
-
-             nome_antigo, username_antigo = dados_usuario
-
-            # Nome mudou?
+            # Se mudou o nome
             if nome_antigo != user.full_name:
 
                 await db.execute("""
@@ -153,7 +142,7 @@ async def novo_membro(event: ChatMemberUpdated):
                     agora
                 ))
 
-            # Username mudou?
+            # Se mudou o username
             if username_antigo != user.username:
 
                 await db.execute("""
@@ -167,6 +156,7 @@ async def novo_membro(event: ChatMemberUpdated):
                     agora
                 ))
 
+            # Atualiza o cadastro
             await db.execute("""
                 UPDATE usuarios
                 SET nome=?, username=?, ultima_vez=?
@@ -180,6 +170,7 @@ async def novo_membro(event: ChatMemberUpdated):
 
         else:
 
+            # Primeiro cadastro
             await db.execute("""
                 INSERT INTO usuarios
                 (id, nome, username, primeira_vez, ultima_vez)
@@ -192,14 +183,45 @@ async def novo_membro(event: ChatMemberUpdated):
                 agora
             ))
 
+            # Salva o primeiro nome no histórico
+            await db.execute("""
+                INSERT INTO historico_usuarios
+                (usuario_id, tipo, valor, data)
+                VALUES (?, ?, ?, ?)
+            """, (
+                user.id,
+                "nome",
+                user.full_name,
+                agora
+            ))
+
+            # Salva o primeiro username no histórico
+            await db.execute("""
+                INSERT INTO historico_usuarios
+                (usuario_id, tipo, valor, data)
+                VALUES (?, ?, ?, ?)
+            """, (
+                user.id,
+                "username",
+                user.username,
+                agora
+            ))
+
+        # Registra a entrada no grupo
+        await db.execute("""
+            INSERT INTO entradas
+            (usuario_id, grupo_id, grupo_nome, data)
+            VALUES (?, ?, ?, ?)
+        """, (
+            user.id,
+            event.chat.id,
+            event.chat.title,
+            agora
+        ))
 
         await db.commit()
 
-
-    print(
-        f"Novo membro: {user.full_name} ({user.id})"
-    )
-
+    print(f"Novo membro: {user.full_name} ({user.id})")
 
 
 async def main():
