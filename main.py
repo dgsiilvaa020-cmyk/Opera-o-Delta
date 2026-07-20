@@ -12,6 +12,8 @@ from datetime import datetime
 from config import BOT_TOKEN, OWNER_IDS
 from database import iniciar_banco
 
+from aiogram.types import CallbackQuery
+
 
 bot = Bot(token=BOT_TOKEN)
 
@@ -42,6 +44,48 @@ async def painel(message: Message):
         "🛡 Guardião\n\nEscolha uma opção:",
         reply_markup=teclado.as_markup()
     )
+
+
+@dp.callback_query(F.data == "novos_membros")
+async def novos_membros(callback: CallbackQuery):
+
+    async with aiosqlite.connect(DATABASE) as db:
+
+        cursor = await db.execute("""
+            SELECT nome, username, usuario_id, grupo_nome, data
+            FROM entradas
+            ORDER BY id DESC
+            LIMIT 10
+        """)
+
+        registros = await cursor.fetchall()
+
+
+    if not registros:
+        await callback.message.edit_text(
+            "👥 Novos Membros\n\nNenhuma entrada registrada ainda."
+        )
+        return
+
+
+    texto = "👥 Últimos membros que entraram:\n\n"
+
+
+    for nome, username, usuario_id, grupo, data in registros:
+
+        texto += (
+            f"👤 {nome}\n"
+            f"📛 @{username if username else 'sem_username'}\n"
+            f"🆔 {usuario_id}\n"
+            f"👥 {grupo}\n"
+            f"📅 {data}\n\n"
+        )
+
+
+    await callback.message.edit_text(texto)
+
+    await callback.answer()
+
 
 @dp.chat_member()
 async def novo_membro(event: ChatMemberUpdated):
