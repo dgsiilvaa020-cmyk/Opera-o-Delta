@@ -135,77 +135,62 @@ async def novo_membro(event: ChatMemberUpdated):
         )
 
 
-        if existe:
+         if existe:
 
-    nome_antigo, username_antigo = dados_usuario
+             nome_antigo, username_antigo = dados_usuario
 
-    # Nome mudou?
-    if nome_antigo != user.full_name:
+            # Nome mudou?
+            if nome_antigo != user.full_name:
 
-        await db.execute("""
-            INSERT INTO historico_usuarios
-            (usuario_id, tipo, valor, data)
-            VALUES (?, ?, ?, ?)
-        """, (
-            user.id,
-            "nome",
-            user.full_name,
-            agora
-        ))
+                await db.execute("""
+                    INSERT INTO historico_usuarios
+                    (usuario_id, tipo, valor, data)
+                    VALUES (?, ?, ?, ?)
+                """, (
+                    user.id,
+                    "nome",
+                    user.full_name,
+                    agora
+                ))
 
-    # Username mudou?
-    if username_antigo != user.username:
+            # Username mudou?
+            if username_antigo != user.username:
 
-        await db.execute("""
-            INSERT INTO historico_usuarios
-            (usuario_id, tipo, valor, data)
-            VALUES (?, ?, ?, ?)
-        """, (
-            user.id,
-            "username",
-            user.username,
-            agora
-        ))
+                await db.execute("""
+                    INSERT INTO historico_usuarios
+                    (usuario_id, tipo, valor, data)
+                    VALUES (?, ?, ?, ?)
+                """, (
+                    user.id,
+                    "username",
+                    user.username,
+                    agora
+                ))
 
-    await db.execute("""
-        UPDATE usuarios
-        SET nome=?, username=?, ultima_vez=?
-        WHERE id=?
-    """, (
-        user.full_name,
-        user.username,
-        agora,
-        user.id
-    ))
-
+            await db.execute("""
+                UPDATE usuarios
+                SET nome=?, username=?, ultima_vez=?
+                WHERE id=?
+            """, (
+                user.full_name,
+                user.username,
+                agora,
+                user.id
+            ))
 
         else:
 
             await db.execute("""
-            INSERT INTO usuarios
-            (id,nome,username,primeira_vez,ultima_vez)
-            VALUES(?,?,?,?,?)
-            """,
-            (
+                INSERT INTO usuarios
+                (id, nome, username, primeira_vez, ultima_vez)
+                VALUES (?, ?, ?, ?, ?)
+            """, (
                 user.id,
                 user.full_name,
                 user.username,
                 agora,
                 agora
             ))
-
-
-        await db.execute("""
-        INSERT INTO entradas
-        (usuario_id,grupo_id,grupo_nome,data)
-        VALUES(?,?,?,?)
-        """,
-        (
-            user.id,
-            event.chat.id,
-            event.chat.title,
-            agora
-        ))
 
 
         await db.commit()
