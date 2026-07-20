@@ -3,15 +3,22 @@ import asyncio
 import aiosqlite
 
 from aiogram import Bot, Dispatcher
-from aiogram.types import ChatMemberUpdated
+from aiogram.types import Message, ChatMemberUpdated
+from aiogram.filters import Command
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 from datetime import datetime
 
 from config import BOT_TOKEN, OWNER_IDS
 from database import iniciar_banco
 
-from aiogram.types import Message
-from aiogram.filters import Command
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+bot = Bot(token=BOT_TOKEN)
+
+dp = Dispatcher()
+
+
+DATABASE = "guardiao.db"
 
 
 @dp.message(Command("start"))
@@ -35,15 +42,6 @@ async def painel(message: Message):
         "🛡 Guardião\n\nEscolha uma opção:",
         reply_markup=teclado.as_markup()
     )
-
-
-bot = Bot(token=BOT_TOKEN)
-
-dp = Dispatcher()
-
-
-DATABASE = "guardiao.db"
-
 
 @dp.chat_member()
 async def novo_membro(event: ChatMemberUpdated):
