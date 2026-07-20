@@ -117,11 +117,17 @@ async def novo_membro(event: ChatMemberUpdated):
     async with aiosqlite.connect(DATABASE) as db:
 
         cursor = await db.execute(
-            "SELECT id FROM usuarios WHERE id=?",
+            """
+            SELECT nome, username
+            FROM usuarios
+            WHERE id=?
+            """,
             (user.id,)
         )
 
-        existe = await cursor.fetchone()
+        dados_usuario = await cursor.fetchone()
+
+        existe = dados_usuario is not None
 
 
         agora = datetime.now().strftime(
@@ -131,17 +137,46 @@ async def novo_membro(event: ChatMemberUpdated):
 
         if existe:
 
-            await db.execute("""
-            UPDATE usuarios
-            SET nome=?, username=?, ultima_vez=?
-            WHERE id=?
-            """,
-            (
-                user.full_name,
-                user.username,
-                agora,
-                user.id
-            ))
+    nome_antigo, username_antigo = dados_usuario
+
+    # Nome mudou?
+    if nome_antigo != user.full_name:
+
+        await db.execute("""
+            INSERT INTO historico_usuarios
+            (usuario_id, tipo, valor, data)
+            VALUES (?, ?, ?, ?)
+        """, (
+            user.id,
+            "nome",
+            user.full_name,
+            agora
+        ))
+
+    # Username mudou?
+    if username_antigo != user.username:
+
+        await db.execute("""
+            INSERT INTO historico_usuarios
+            (usuario_id, tipo, valor, data)
+            VALUES (?, ?, ?, ?)
+        """, (
+            user.id,
+            "username",
+            user.username,
+            agora
+        ))
+
+    await db.execute("""
+        UPDATE usuarios
+        SET nome=?, username=?, ultima_vez=?
+        WHERE id=?
+    """, (
+        user.full_name,
+        user.username,
+        agora,
+        user.id
+    ))
 
 
         else:
