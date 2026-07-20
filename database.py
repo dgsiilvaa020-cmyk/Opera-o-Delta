@@ -79,6 +79,16 @@ async def iniciar_banco():
 
         for tabela in tabelas:
             print(" -", tabela[0])
+            
+
+        cursor = await db.execute("""
+            SELECT * FROM historico_usernames
+        """)
+
+        dados = await cursor.fetchall()
+
+        print("HISTORICO USERNAMES:")
+        print(dados)
 
 
     print("Banco iniciado!")
