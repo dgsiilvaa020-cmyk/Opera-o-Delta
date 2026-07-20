@@ -45,8 +45,7 @@ async def iniciar_banco():
         )
         """)
 
-        
-        # Histórico de nomes
+
         await db.execute("""
         CREATE TABLE IF NOT EXISTS historico_nomes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,8 +55,7 @@ async def iniciar_banco():
         )
         """)
 
-        
-        # Histórico de usernames
+
         await db.execute("""
         CREATE TABLE IF NOT EXISTS historico_usernames (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,18 +68,6 @@ async def iniciar_banco():
 
         await db.commit()
 
-        cursor = await db.execute("""
-            SELECT name FROM sqlite_master
-            WHERE type='table'
-        """)
-
-        tabelas = await cursor.fetchall()
-
-        print("TABELAS DO BANCO:")
-        print(tabelas)
-        
-
-       await db.commit()
 
         cursor = await db.execute(
             "SELECT name FROM sqlite_master WHERE type='table'"
@@ -90,7 +76,9 @@ async def iniciar_banco():
         tabelas = await cursor.fetchall()
 
         print("TABELAS CRIADAS:")
+
         for tabela in tabelas:
-            print(tabela[0])
+            print(" -", tabela[0])
+
 
     print("Banco iniciado!")
