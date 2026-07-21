@@ -20,6 +20,104 @@ dp = Dispatcher()
 DATABASE = "guardiao.db"
 
 
+async def sincronizar_usuario(user):
+
+    agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+    async with aiosqlite.connect(DATABASE) as db:
+
+        cursor = await db.execute("""
+            SELECT nome, username
+            FROM usuarios
+            WHERE id=?
+        """, (
+            user.id,
+        ))
+
+        dados = await cursor.fetchone()
+
+        if dados:
+
+            nome_antigo, username_antigo = dados
+
+            # Nome mudou
+            if nome_antigo != user.full_name:
+
+                await db.execute("""
+                    INSERT INTO historico_nomes
+                    (usuario_id, nome, data)
+                    VALUES (?, ?, ?)
+                """, (
+                    user.id,
+                    nome_antigo,
+                    agora
+                ))
+
+            # Username mudou
+            if username_antigo != user.username:
+
+                await db.execute("""
+                    INSERT INTO historico_usernames
+                    (usuario_id, username, data)
+                    VALUES (?, ?, ?)
+                """, (
+                    user.id,
+                    username_antigo,
+                    agora
+                ))
+
+            # Atualiza os dados atuais
+            await db.execute("""
+                UPDATE usuarios
+                SET nome=?, username=?, ultima_vez=?
+                WHERE id=?
+            """, (
+                user.full_name,
+                user.username,
+                agora,
+                user.id
+            ))
+
+        else:
+
+            # Primeiro cadastro
+            await db.execute("""
+                INSERT INTO usuarios
+                (id, nome, username, primeira_vez, ultima_vez)
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                user.id,
+                user.full_name,
+                user.username,
+                agora,
+                agora
+            ))
+
+            # Guarda o primeiro nome
+            await db.execute("""
+                INSERT INTO historico_nomes
+                (usuario_id, nome, data)
+                VALUES (?, ?, ?)
+            """, (
+                user.id,
+                user.full_name,
+                agora
+            ))
+
+            # Guarda o primeiro username
+            await db.execute("""
+                INSERT INTO historico_usernames
+                (usuario_id, username, data)
+                VALUES (?, ?, ?)
+            """, (
+                user.id,
+                user.username,
+                agora
+            ))
+
+        await db.commit()
+
+
 @dp.message(Command("start"))
 async def painel(message: Message):
 
