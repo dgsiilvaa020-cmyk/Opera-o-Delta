@@ -81,6 +81,8 @@ async def novos_membros(callback: CallbackQuery):
 
     texto = "👥 Últimos membros:\n\n"
 
+    teclado = InlineKeyboardBuilder()
+
 
     for nome, username, usuario_id, grupo, data in registros:
 
@@ -92,8 +94,19 @@ async def novos_membros(callback: CallbackQuery):
             f"📅 {data}\n\n"
         )
 
+        teclado.button(
+            text=f"👤 {nome}",
+            callback_data=f"usuario_{usuario_id}"
+        )
 
-    await callback.message.edit_text(texto)
+
+    teclado.adjust(1)
+
+
+    await callback.message.edit_text(
+        texto,
+        reply_markup=teclado.as_markup()
+    )
 
     await callback.answer()
     
