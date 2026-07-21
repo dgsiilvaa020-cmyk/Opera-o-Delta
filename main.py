@@ -218,6 +218,65 @@ async def novo_membro(event: ChatMemberUpdated):
         await db.commit()
 
     print(f"Novo membro: {user.full_name} ({user.id})")
+    
+
+@dp.message()
+async def verificar_mudanca_usuario(message: Message):
+
+    user = message.from_user
+
+    if not user:
+        return
+
+    agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+    async with aiosqlite.connect(DATABASE) as db:
+
+        cursor = await db.execute("""
+            SELECT username
+            FROM usuarios
+            WHERE id=?
+        """, (
+            user.id,
+        ))
+
+        dados = await cursor.fetchone()
+
+        if not dados:
+            return
+
+
+        username_antigo = dados[0]
+
+
+        if username_antigo != user.username:
+
+            await db.execute("""
+                INSERT INTO historico_usernames
+                (usuario_id, username, data)
+                VALUES (?, ?, ?)
+            """, (
+                user.id,
+                username_antigo,
+                agora
+            ))
+
+
+            await db.execute("""
+                UPDATE usuarios
+                SET username=?
+                WHERE id=?
+            """, (
+                user.username,
+                user.id
+            ))
+
+
+            await db.commit()
+
+            print(
+                f"Username alterado: {username_antigo} -> {user.username}"
+            )
 
 
 async def main():
