@@ -278,6 +278,92 @@ async def verificar_mudanca_usuario(message: Message):
                 f"Username alterado: {username_antigo} -> {user.username}"
             )
 
+@dp.callback_query(F.data.startswith("usuario_"))
+async def ficha_usuario(callback: CallbackQuery):
+
+    usuario_id = int(
+        callback.data.split("_")[1]
+    )
+
+    async with aiosqlite.connect(DATABASE) as db:
+
+        cursor = await db.execute("""
+            SELECT nome, username
+            FROM usuarios
+            WHERE id=?
+        """, (
+            usuario_id,
+        ))
+
+        usuario = await cursor.fetchone()
+
+
+        if not usuario:
+            await callback.answer(
+                "Usuário não encontrado"
+            )
+            return
+
+
+        nome, username = usuario
+
+
+        cursor = await db.execute("""
+            SELECT username, data
+            FROM historico_usernames
+            WHERE usuario_id=?
+            ORDER BY id DESC
+        """, (
+            usuario_id,
+        ))
+
+        usernames = await cursor.fetchall()
+
+
+        cursor = await db.execute("""
+            SELECT nome, data
+            FROM historico_nomes
+            WHERE usuario_id=?
+            ORDER BY id DESC
+        """, (
+            usuario_id,
+        ))
+
+        nomes = await cursor.fetchall()
+
+
+    texto = (
+        f"👤 Ficha do Usuário\n\n"
+        f"🆔 {usuario_id}\n"
+        f"👤 {nome}\n"
+        f"📛 @{username if username else 'sem @'}\n\n"
+    )
+
+
+    texto += "📜 Histórico de @:\n"
+
+    if usernames:
+        for user, data in usernames:
+            texto += f"• @{user}\n"
+    else:
+        texto += "Nenhum histórico\n"
+
+
+    texto += "\n📝 Histórico de nomes:\n"
+
+    if nomes:
+        for nome_antigo, data in nomes:
+            texto += f"• {nome_antigo}\n"
+    else:
+        texto += "Nenhum histórico\n"
+
+
+    await callback.message.edit_text(
+        texto
+    )
+
+    await callback.answer()
+    
 
 async def main():
 
